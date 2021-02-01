@@ -44,3 +44,4 @@ Restart Nginx dengan command
 ![08](assets/08.png)
 
 Hasil Akhir:
+![09](assets/09.png)

@@ -15,3 +15,5 @@ sudo apt-get install -y python-certbot-nginx
 
 * #### Hasil Output:
 ![02](assets/02.png)
+![04](assets/04.png)
+

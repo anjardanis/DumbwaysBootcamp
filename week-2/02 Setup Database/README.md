@@ -19,14 +19,14 @@
 ![06](assets/06.png)
 ![07](assets/07.png)
 
-* #### Buat user baru dan inisialisasi dengan backend server
+* #### Buat user baru dan inisialisasi dengan 2 backend server
 
 ```
 mysql -u root -p
 
-CREATE USER 'backend'@'10.0.1.123' IDENTIFIED BY 'anjar'; 
+CREATE USER 'backend'@'10.0.1.126' IDENTIFIED BY 'anjar'; 
 
-GRANT ALL PRIVILEGES ON *.* TO 'backend'@'10.0.1.123';
+GRANT ALL PRIVILEGES ON *.* TO 'backend'@'10.0.1.126';
 
 FLUSH PRIVILEGES;
 ```
@@ -54,3 +54,51 @@ sudo apt-get install -y mysql-client
 * #### akses database server dari backend server menggunakan command
 `mysql -u backend -h 10.0.1.58 -p`
 ![13](assets/13.png)
+
+* ## Konfigurasi Master-Slave Replication Database 
+
+* #### Ubah file `mysqld.cnf` dengan tambahan server id=1 untuk master dan log_bin dan restart mysql (database1)
+`sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf` 
+![14](assets/14.png)
+
+* #### buat replikasi user (database1)
+```
+mysql -u root
+CREATE USER 'repl'@'%' IDENTIFIED BY 'slavepassword';
+GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+exit
+```
+![15](assets/15.png)
+
+* #### buat snapshot dan copy ke server slave atau database2
+```
+mysqldump -u root -p --all-databases --master-data > masterdump.sql
+scp masterdump.sql database02@10.0.1.176:
+```
+![16](assets/16.png)
+
+* #### Ubah file `mysqld.cnf` dengan tambahan server id=2 dan bind adress diganti ip private (database2) dan restart mysql
+`sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf`
+![17](assets/17.png)
+
+* #### setting slave database untuk ke host master database
+```
+mysql -u root
+CHANGE MASTER TO
+MASTER_HOST='10.0.1.237',
+MASTER_USER='repl',
+MASTER_PASSWORD='slavepassword';
+exit
+```
+![18](assets/18.png)
+
+* #### Restore the snapshot pada slave database (database2)
+`mysql -uroot -p < masterdump.sql`
+![19](assets/19.png)
+
+* #### Check status slave database
+![20](assets/20.png)
+
+* #### tes sinkronisasi
+![21](assets/21.png)
+![22](assets/22.png)

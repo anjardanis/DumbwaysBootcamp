@@ -2,7 +2,10 @@
 
 * #### Buat file backend.conf pada `/etc/nginx/dumblibrary`
 ```
-
+upstream backend {
+        server 10.0.1.126:5000;
+        server 10.0.1.201:5000;
+    }
  server {
         listen 80;
         listen [::]:80;
@@ -10,7 +13,7 @@
         server_name 34.233.242.103;
 
         location / {
-                proxy_pass http://10.0.1.227:5000;
+                proxy_pass http://backend;
         }
 }
 
